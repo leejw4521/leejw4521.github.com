@@ -38,3 +38,19 @@ while True:
 I got code that looks like this. 
 
 But if you only write code like this, it’ll be hard to understand. So let me explain the code.
+
+
+```
+import os
+```
+First, we need to **import os** to use the os module.
+
+
+```
+while True:
+```
+
+Then, since **cmd** needs to run in an infinite loop, set it to *True* to make it loop endlessly.
+
+Okay, we’ve finished the initial part, so now let’s implement the functionality. Let’s start with **cd foldername**.
+
