@@ -92,3 +92,10 @@ Then, use 'pop' on c to remove the last part.
 Finally, move to the directory specified by **new_path**.
 
 And that’s it.
+
+Next is the dir code, which is actually pretty simple.
+```
+    elif a == 'dir':
+        os.system('dir')
+```
+If it’s not any of the other cases and it’s 'dir', this is the code that runs.
