@@ -99,3 +99,18 @@ Next is the dir code, which is actually pretty simple.
         os.system('dir')
 ```
 If it’s not any of the other cases and it’s 'dir', this is the code that runs.
+If it’s **dir**, using '*os.system*' will produce the same output as in *cmd*, so that’s all we need.
+
+The last part is cat, and it prints the contents of the file you provide.
+```
+    elif a[:3] == 'cat':
+        o = open(os.getcwd()+"\\"+a[4:],'r')
+        O=o.read()
+        o.close()
+        print(O)
+```
+If you use **cat**, it reads the contents of the file specified after it.
+
+After reading the file, use 'read' to turn it into a str, then print it, and you’re done.
+
+That’s it!
