@@ -36,5 +36,4 @@ while True:
 ```
 
 I got code that looks like this. 
-
 But if you only write code like this, it’ll be hard to understand. So let me explain the code.
