@@ -69,3 +69,21 @@ This is it—it checks whether the first two characters are cd.
             os.chdir(os.getcwd()+"\\"+b)
 ```
 And if it’s not the previous code, it must be **cd foldername**, so we convert the part after *cd* into a string and use the *os* module’s **chdir** and **getcwd** to implement it by combining the current directory with that part.
+
+
+And next, I’ll explain the cd.. code.
+```
+        if str(a[2:]) == '..':
+            c = os.getcwd().split('\\') 
+            c.pop()
+            new_path = '\\'.join(c)
+            os.chdir(new_path)
+```
+
+If the first two characters are '**cd**', we check whether the remaining characters are '**..**'.
+Once it matches, it will run.
+
+Set c as the current directory path split by \\
+
+Then, use 'pop' on c to remove the last part.
+“Next, insert '\\' between the elements of **c** and store the result in a variable named '**new_path.**'
