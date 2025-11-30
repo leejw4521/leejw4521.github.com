@@ -4,7 +4,7 @@ layout: post
 
 Today, I will be creating a cmd that I was given as homework. CMD is the command prompt on our computer, and we're going to make it in Python.
 Since I can't include all of cmd's features, I'm going to try to create just a few, a total of four.
-1. cd **foldername**
+1. cd **foldername**(#here)
 2. cd..
 3. dir
 4. cat **filename**
@@ -53,4 +53,4 @@ while True:
 Then, since **cmd** needs to run in an infinite loop, set it to *True* to make it loop endlessly.
 
 Okay, we’ve finished the initial part, so now let’s implement the functionality. Let’s start with **cd foldername**.
-
+Looking here(#here), there are two parts that include cd, so we’ll start by creating the part that distinguishes code with cd from code without it.
