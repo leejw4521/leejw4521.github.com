@@ -86,4 +86,9 @@ Once it matches, it will run.
 Set c as the current directory path split by \\
 
 Then, use 'pop' on c to remove the last part.
+
 “Next, insert '\\' between the elements of **c** and store the result in a variable named '**new_path.**'
+
+Finally, move to the directory specified by **new_path**.
+
+And that’s it.
