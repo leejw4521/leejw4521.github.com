@@ -25,7 +25,6 @@ while True:
             new_path = '\\'.join(c)
             os.chdir(new_path)
         else:
-            os.chdir
             b=str(a[3:])
             os.chdir(os.getcwd()+"\\"+b)
     elif a[:3] == 'cat':
@@ -56,3 +55,16 @@ Then, since **cmd** needs to run in an infinite loop, set it to *True* to make i
 
 Okay, we’ve finished the initial part, so now let’s implement the functionality. Let’s start with **cd foldername**.
 Looking [here](#here), there are two parts that include cd, so we’ll start by creating the part that distinguishes code with cd from code without it.
+```
+    if str(a[:2]) == 'cd':
+```
+
+This is it—it checks whether the first two characters are cd.
+
+
+
+```
+        else:
+            b=str(a[3:])
+            os.chdir(os.getcwd()+"\\"+b)
+```
