@@ -68,3 +68,4 @@ This is it—it checks whether the first two characters are cd.
             b=str(a[3:])
             os.chdir(os.getcwd()+"\\"+b)
 ```
+And if it’s not the previous code, it must be **cd foldername**, so we convert the part after *cd* into a string and use the *os* module’s **chdir** and **getcwd** to implement it by combining the current directory with that part.
