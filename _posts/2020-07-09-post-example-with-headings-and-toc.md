@@ -2,25 +2,62 @@
 layout: post
 ---
 
-Mauris viverra dictum ultricies. Vestibulum quis ipsum euismod, facilisis metus sed, varius ipsum. Donec scelerisque lacus libero, eu dignissim sem venenatis at. Nunc a egestas tortor, sed feugiat leo.
+### 📂 시도/시군구별 감기 진료 정보 합계 구하기
 
-## Table of contents
-- [Table of contents](#table-of-contents)
-- [The start](#the-start)
-- [The middle](#the-middle)
-- [The end](#the-end)
+이 코드는 `csv` 모듈을 사용하여 지역 코드 데이터와 진료 정보를 매핑하고, 특정 날짜와 지역에 따른 감기 환자 수의 합계를 계산하는 스크립트입니다.
 
-Mauris viverra dictum ultricies. Vestibulum quis ipsum euismod, facilisis metus sed, varius ipsum. Donec scelerisque lacus libero, eu dignissim sem venenatis at. Nunc a egestas tortor, sed feugiat leo. Vestibulum porta tincidunt tellus, vitae ornare tortor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed nunc neque, tempor in iaculis non, faucibus et metus. Etiam id nisl ut lorem gravida euismod.
+```python
+import csv
 
-## [The start](#the-start)
+# 파일 열기
+f_sido = open('시도 지역코드.csv', 'r')
+f_sigungu = open('시군구 지역코드.csv', 'r')
+f_info = open('실제진료정보_감기_시군구.csv', 'r')
 
-Fusce non velit cursus ligula mattis convallis vel at metus. Sed pharetra tellus massa, non elementum eros vulputate non. Suspendisse potenti. Quisque arcu felis, laoreet vel accumsan sit amet, fermentum at nunc. Sed massa quam, auctor in eros quis, porttitor tincidunt orci. Nulla convallis id sapien ornare viverra. Cras nec est lacinia ligula porta tincidunt. Nam a est eget ligula pellentesque posuere. Maecenas quis enim ac risus accumsan scelerisque. Aliquam vitae libero sapien. Etiam convallis, metus nec suscipit condimentum, quam massa congue velit, sit amet sollicitudin nisi tortor a lectus. Cras a arcu enim. Suspendisse hendrerit euismod est ac gravida. Donec vitae elit tristique, suscipit eros at, aliquam augue. In ac faucibus dui. Sed tempor lacus tristique elit sagittis, vitae tempor massa convallis.
+rdr_sido = csv.reader(f_sido)
+rdr_sigungu = csv.reader(f_sigungu)
+rdr_info = csv.reader(f_info)
 
-## [The middle](#the-middle)
+# 데이터 구조화
+sigungu_dict = {}
+cold_data = {}
 
-Proin quis velit et eros auctor laoreet. Aenean eget nibh odio. Suspendisse mollis enim pretium, fermentum urna vitae, egestas purus. Donec convallis tincidunt purus, scelerisque fermentum eros sagittis vel. Aliquam ac aliquet risus, tempus iaculis est. Fusce molestie mauris non interdum hendrerit. Curabitur ullamcorper, eros vitae interdum volutpat, lacus magna lacinia turpis, at accumsan dui tortor vel lectus. Aenean risus massa, semper non lectus rutrum, facilisis imperdiet mi. Praesent sed quam quis purus auctor ornare et sed augue. Vestibulum non quam quis ligula luctus placerat sed sit amet erat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Fusce auctor, sem eu volutpat dignissim, turpis nibh malesuada arcu, in consequat elit mauris quis sem. Nam tristique sit amet enim vel accumsan. Sed id nibh commodo, dictum sem id, semper quam.
+# 1. 시도 코드 매핑 (코드 -> 이름)
+temp_sido = {}
+for line in rdr_sido:
+    if line:
+        temp_sido[line[0]] = line[1]
 
-## The end
+# 2. 시군구 코드 매핑 (코드 -> [시군구명, 시도명])
+for line in rdr_sigungu:
+    if line:
+        parent_code = line[0]
+        sido_name = temp_sido.get(parent_code, "")
+        sigungu_dict[line[1]] = [line[2], sido_name]
 
-Donec ex lectus, tempus non lacinia quis, pretium non ipsum. Praesent est nunc, rutrum vel tellus eu, tristique laoreet purus. In rutrum orci sit amet ex ornare, sit amet finibus lacus laoreet. Etiam ac facilisis purus, eget porttitor odio. Suspendisse tempus dolor nec risus sodales posuere. Proin dui dui, mollis a consectetur molestie, lobortis vitae tellus. Vivamus at purus sed urna sollicitudin mattis. Mauris lacinia libero in lobortis pulvinar. Nullam sit amet condimentum justo. Donec orci justo, pharetra ut dolor non, interdum finibus orci. Proin vitae ante a dui sodales commodo ac id elit. Nunc vel accumsan nunc, sit amet congue nunc. Aliquam in lacinia velit. Integer lobortis luctus eros, in fermentum metus aliquet a. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.
+# 3. 진료 정보 매핑 ((날짜, 시군구코드) -> 발생건수)
+for line in rdr_info:
+    if line:
+        cold_data[(line[0], line[1])] = line[2]
 
+# 사용자 입력
+target_sido = input('지역: ')
+target_date = input('날짜: ')
+
+total_count = 0
+
+# 결과 출력 및 합계 계산
+for code in sigungu_dict:
+    name, sido = sigungu_dict[code]
+    if target_sido == sido:
+        count = cold_data.get((target_date, code), "0")
+        print(f"{name} {count}")
+        total_count += int(count)
+
+print(f"합계 {total_count}")
+
+# 파일 닫기
+f_sido.close()
+f_sigungu.close()
+f_info.close()
+```
