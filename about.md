@@ -3,6 +3,15 @@ layout: post
 title: About
 ---
 
-This is an example page!
+아 여기다가 뭐 쓰지
+정말 쓸게 없는데
 
-Actually, it has the same layout of a post...
+
+
+
+# 내 이메일
+ljw4521@naver.com
+
+저는 남자 입니다.
+남자란 남성의 성별을 가진 사람을 말합니다.
+저는 남성의 성별을 가진 사람입니다.
