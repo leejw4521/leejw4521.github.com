@@ -117,10 +117,10 @@ class MyWindow(QMainWindow, form):
     try:
       # 원격 데이터베이스 서버에 안전하게 접속합니다.
       conn = pymysql.connect(
-          host="183.100.182.169",
-          user="root",
-          password="swhacademy!",
-          db="leejunwon",
+          host="***.***.***.***",
+          user="****",
+          password="**********",
+          db="*********",
           charset="utf8",
           cursorclass=pymysql.cursors.DictCursor,
       )
