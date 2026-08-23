@@ -1,51 +1,174 @@
----
-layout: post
-title: "Language Tests"
----
 
-Note: Text is from [moving](https://github.com/huangyz0918/moving), which is another good Jekyll theme.
+# [단계 1] 프로그램 초기화 및 UI 로드 (`__init__`)
 
-### 1. 日本語テスト
+* **설명**: 프로그램을 실행하면 가장 먼저 호출되는 생성자 단계입니다. `hello.ui` 파일을 불러와 기본 창을 구성하고, 카테고리 매핑 정보와 테이블 컬럼의 크기 조절 방식을 설정합니다. 또한 콤보박스나 캘린더가 변경될 때 데이터를 불러오는 함수가 실행되도록 시그널을 연결합니다.
 
-This is a Japanese test post to show you how japanese is displayed.
+```python
+import sys
+from PyQt5.QtWidgets import *
+from PyQt5 import uic
+import pymysql.cursors
 
-私は昨日ついにその助力家というのの上よりするたなけれ。
-最も今をお話団はちょうどこの前後なかろでくらいに困りがいるたをは帰着考えたなかって、そうにもするでうたらない。
-がたを知っないはずも同時に九月をいよいよたありた。
-
-もっと槙さんにぼんやり金少し説明にえた自分大した人私か影響にというお関係たうませないが、この次第も私か兄具合に使うて、槙さんののに当人のあなたにさぞご意味と行くて私個人が小尊敬を聴いように同時に同反抗に集っだうて、いよいよまず相当へあっうからいだ事をしでなけれ。
-
-> それでそれでもご時日をしはずはたったいやと突き抜けるますて、その元がは行ったてという獄を尽すていけですた。
-
-この中道具の日その学校はあなたごろがすまなりかとネルソンさんの考えるですん、辺の事実ないというご盲従ありたですと、爺さんのためが薬缶が結果までの箸の当時してならて、多少の十月にためからそういう上からとにかくしましないと触れべきものたで、ないうですと多少お人達したのでたた。
-
-From [すぐ使えるダミーテキスト - 日本語 Lorem ipsum.](http://lipsum.sugutsukaeru.jp/index.cgi) 
+form = uic.loadUiType("hello.ui")[0]
 
 
-### 2. 繁体中文测试
+class MyWindow(QMainWindow, form):
 
-This is a chinese test post to show you how chinese is displayed.
+  def __init__(self):
+    super().__init__()
+    self.setupUi(self)
+    self.resize(800, 600)
 
-善我王上魚、產生資西員合兒臉趣論。畫衣生這著爸毛親可時，安程幾？合學作。觀經而作建。都非子作這！法如言子你關！手師也。
+    self.category_map = {
+        "정치": "100",
+        "경제": "101",
+        "사회": "102",
+        "세계": "104",
+    }
 
-以也座論頭室業放。要車時地變此親不老高小是統習直麼調未，行年香一？
+    self.tableWidget.setColumnCount(4)
+    self.tableWidget.setHorizontalHeaderItem(3, QTableWidgetItem("내용"))
 
-就竟在，是我童示讓利分和異種百路關母信過明驗有個歷洋中前合著區亮風值新底車有正結，進快保的行戰從：弟除文辦條國備當來際年每小腳識世可的的外的廣下歌洲保輪市果底天影；全氣具些回童但倒影發狀在示，數上學大法很，如要我……月品大供這起服滿老？應學傳者國：山式排只不之然清同關；細車是！停屋常間又，資畫領生，相們制在？公別的人寫教資夠。資再我我！只臉夫藝量不路政吃息緊回力之；兒足灣電空時局我怎初安。意今一子區首者微陸現際安除發連由子由而走學體區園我車當會，經時取頭，嚴了新科同？很夫營動通打，出和導一樂，查旅他。坐是收外子發物北看蘭戰坐車身做可來。道就學務。
+    header = self.tableWidget.horizontalHeader()
+    header.setSectionResizeMode(0, QHeaderView.Stretch)
+    header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+    header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+    header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
 
-國新故。
+    self.detail_window = None
+    self.current_result = []
 
-> 工步他始能詩的，裝進分星海演意學值例道……於財型目古香亮自和這乎？化經溫詩。只賽嚴大一主價世哥受的沒有中年即病行金拉麼河。主小路了種就小為廣不？
+    self.url_label = QLabel(self)
+    self.url_label.setOpenExternalLinks(True)
+    self.url_label.setVisible(False)
+    self.url_label.resize(800, 50)
 
-From [亂數假文產生器 - Chinese Lorem Ipsum.](http://www.richyli.com/tool/loremipsum/) 
+    central_widget = self.centralWidget()
+    if central_widget:
+      if central_widget.layout():
+        central_widget.layout().addWidget(self.url_label)
+      else:
+        layout = QVBoxLayout(central_widget)
+        layout.addWidget(self.url_label)
+
+    self.comboBox.currentIndexChanged.connect(self.load_data)
+    self.calendarWidget.clicked.connect(self.load_data)
+    self.load_data()
+```
+
+# [단계 2] 데이터 조회 및 화면 갱신 (`load_data`)
+
+* **설명**: 사용자가 콤보박스에서 카테고리를 바꾸거나 캘린더에서 날짜를 선택할 때 실행됩니다. 선택된 조건에 맞춰 네이버 뉴스 원본 링크를 생성해 하단에 보여주고, 원격 MySQL 데이터베이스에 접속하여 조건에 맞는 뉴스 데이터를 조회한 뒤 테이블 위젯에 출력합니다.
+
+```python
+  def load_data(self):
+    selected_category_name = self.comboBox.currentText()
+    category_code = self.category_map.get(selected_category_name)
+
+    selected_date = self.calendarWidget.selectedDate().toString("yyyy.MM.dd")
+    url_date = self.calendarWidget.selectedDate().toString("yyyyMMdd")
+
+    if category_code and selected_date:
+      target_url = f"[https://news.naver.com/main/list.naver?mode=LS2D&sid1=](https://news.naver.com/main/list.naver?mode=LS2D&sid1=){category_code}&mid=shm&date={url_date}&page=1"
+      self.url_label.setText(
+          f'직접 찾아보기: <a href="{target_url}">{target_url}</a>'
+      )
+      self.url_label.setVisible(True)
+
+    try:
+      conn = pymysql.connect(
+          host="183.100.182.169",
+          user="root",
+          password="swhacademy!",
+          db="leejunwon",
+          charset="utf8",
+          cursorclass=pymysql.cursors.DictCursor,
+      )
+
+      with conn.cursor() as cursor:
+        sql = """
+                    SELECT jemok, sujeongil, gamsung, neyong
+                    FROM nyusu
+                    WHERE tag = %s AND sujeongil LIKE %s
+                """
+        cursor.execute(sql, (category_code, f"{selected_date}%"))
+        result = cursor.fetchall()
+
+        self.current_result = result
+
+        self.tableWidget.setRowCount(len(result))
+        for row_idx, row in enumerate(result):
+          self.tableWidget.setItem(
+              row_idx, 0, QTableWidgetItem(str(row["jemok"]))
+          )
+          self.tableWidget.setItem(
+              row_idx, 1, QTableWidgetItem(str(row["sujeongil"]))
+          )
+          self.tableWidget.setItem(
+              row_idx, 2, QTableWidgetItem(str(row["gamsung"]))
+          )
+
+          btn = QPushButton("내용")
+          btn.clicked.connect(
+              lambda checked, r=row_idx: self.open_detail_window(r, 3)
+          )
+          self.tableWidget.setCellWidget(row_idx, 3, btn)
+
+    except Exception as e:
+      print(f"DB 조회 에러: {e}")
+    finally:
+      if "conn" in locals() and conn.open:
+        conn.close()
+```
 
 
+# [단계 3] 상세 내용 창 제어 및 다이얼로그 정의 (`open_detail_window` & `DetailDialog`)
 
-### 3. 简体中文测试
+* **설명**: 테이블의 [내용] 버튼을 누르면 호출됩니다. 뉴스의 전체 본문을 보여주기 위한 `DetailDialog` 창을 띄우거나, 이미 창이 열려있는 경우 기존 창의 내용만 업데이트하여 화면 앞으로 활성화합니다.
 
-效育声去本义然空，各值太法心想，场强实地。 题铁习点儿表管少间千，只何政亲织文意部，千影画派证男须。 手反取长风治增非等直难群，连取及天他己事头级，影数弦适把气快目人。 专议以省通引而千个，格则口段度样水热马，地教少务改磨。 包思外心半院应她算斯，市外会快记路又火学，劳如肃它准众丧边。
-   
-  > 团算部住县单总边素格军所，合音府教看和广光采率位转，位用品根确针百。 证其标元角工方海接交他，论象切万世认一响义，治然身本风弦带题。 向我次路持加北，她不反心。 说总元军例市决，现始即算证养，规走还壳。
+```python
+class DetailDialog(QWidget):
 
-因林可相儿应满军，热影省条律因资再，整肃赤心将届。 局广写两量备验还，南教事争工民的，备进研上布。 素身电活非直，速这区交示从，百层达。 资量那毛什京身，白这快。 半打容三手开常价或，手严量般象式效，名可重芽门适。 来设什一我么，光界美么或，住身式准。 造酸改表委验众办地百养，商物战众本列听度名院，制压录丽快与千机内。 住需当四议决得命南然照按民置，当住命形金决否矿单外。 气象理离开新集增际，三划方工义很年关，拉许准孝口。 构片出干计由备美打养，持育总指承入无己。
+  def __init__(self, data):
+    super().__init__()
+    self.setWindowTitle(str(data.get("jemok", "뉴스 내용")))
+    self.resize(500, 400)
 
-From [假文生成器， lorem ipsum Chinese](http://www.cancms.com/content/dummytext)
+    layout = QVBoxLayout()
+
+    self.text_neyong = QTextEdit()
+    self.text_neyong.setReadOnly(True)
+    self.text_neyong.setText(str(data.get("neyong", "")))
+
+    layout.addWidget(self.text_neyong)
+    self.setLayout(layout)
+
+  def update_content(self, data):
+    self.setWindowTitle(str(data.get("jemok", "뉴스 내용")))
+    self.text_neyong.setText(str(data.get("neyong", "")))
+
+
+  def open_detail_window(self, row, column):
+    if row < len(self.current_result):
+      data = self.current_result[row]
+      if self.detail_window is None or not self.detail_window.isVisible():
+        self.detail_window = DetailDialog(data)
+        self.detail_window.show()
+      else:
+        self.detail_window.update_content(data)
+        self.detail_window.activateWindow()
+```
+
+
+# [단계 4] 애플리케이션 실행 (`if __name__ == "__main__":`)
+
+* **설명**: 파이썬 스크립트가 직접 실행될 때 `QApplication` 객체를 생성하고 메인 윈도우를 화면에 띄운 뒤 이벤트 루프를 시작합니다.
+
+```python
+if __name__ == "__main__":
+  app = QApplication(sys.argv)
+  window = MyWindow()
+  window.show()
+  sys.exit(app.exec_())
+```
+
